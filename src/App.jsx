@@ -1,12 +1,32 @@
+import React, { useRef, useState, useEffect } from 'react'
 import { Canvas } from "@react-three/fiber";
 import { Experience } from "./components/Experience";
 import { useControls, button } from 'leva'
-import { EffectComposer, Bloom, DepthOfField, Noise, Vignette } from '@react-three/postprocessing'
+import { EffectComposer, Selection, Select, Outline } from '@react-three/postprocessing'
+
+
+function Selectable({ children }) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <Select enabled={hovered}>
+      {React.cloneElement(children, {
+        onPointerOver: (e) => {
+          e.stopPropagation()
+          setHovered(true)
+        },
+        onPointerOut: () => setHovered(false)
+      })}
+    </Select>
+  )
+}
+
+
 
 function App() {
   useControls({
     color: '#ff9621',
-    
+
     testBool: true,
 
     buttonName: button(() => {
@@ -24,19 +44,43 @@ function App() {
 
 
   return (
-    <>
-      <Canvas shadows camera={{ position: [3, 3, 3], fov: 30 }}>
-      <color attach="background" args={["#ececec"]} />
-      <EffectComposer>
-        <DepthOfField focusDistance={0} focalLength={0.02} bokehScale={2} height={480} />
-        <Bloom luminanceThreshold={0} luminanceSmoothing={0.9} height={300} />
-        <Noise opacity={0.02} />
-        <Vignette eskil={false} offset={0.1} darkness={1.1} />
-      </EffectComposer>
+    <Canvas shadows camera={{ position: [3, 3, 3], fov: 30 }}>
+      <color attach="background" args={["#666666"]} />
+      <mesh position={[0, -1, 0]} scale={[10, 0.01, 10]}>
+            <boxGeometry />
+            <meshStandardMaterial />
+          </mesh>
+      <Selection>
+        <EffectComposer multisampling={8} autoClear={false}>
+          <Outline
+            blur
+            visibleEdgeColor="white"
+            edgeStrength={100}
+            width={1000}
+          />
+        </EffectComposer>
+
+        <Selectable>
+          <mesh position={[0, 0, 0]}>
+            <boxGeometry />
+            <meshNormalMaterial />
+          </mesh>
+        </Selectable>
+        <Selectable>
+          <mesh position={[1.5, 0, 0]}>
+            <boxGeometry />
+            <meshNormalMaterial />
+          </mesh>
+        </Selectable>
+        <Selectable>
+          <mesh position={[-1.5, 0, 0]}>
+            <boxGeometry />
+            <meshNormalMaterial />
+          </mesh>
+        </Selectable>
+      </Selection>
     </Canvas>
-    </>
-    
-  );
+  )
 }
 
 export default App;
